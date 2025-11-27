@@ -12,7 +12,7 @@ export interface ServiceConfig {
 export const ALL_SERVICES: ServiceConfig[] = [
   {
     path: '/api/aireview',
-    target: 'http://localhost:3000',
+    target: 'http://backend-aireview:3000',
     requiresAuth: true,
     timeout: 10000,
     changeOrigin: true,

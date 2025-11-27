@@ -16,7 +16,7 @@ services:
       # 固定配置，不需要放在 .env 中
       - NODE_ENV=production
     networks:
-      - gateway-network
+      - shared-network
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:9999/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
       interval: 30s
@@ -29,6 +29,7 @@ services:
       - /app/node_modules
 
 networks:
-  gateway-network:
-    driver: bridge
+  shared-network:
+    external: true
+    name: shared-network
 
