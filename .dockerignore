@@ -1,0 +1,54 @@
+# 依赖目录
+node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+
+# 构建产物
+dist
+build
+*.tsbuildinfo
+
+# 测试相关
+coverage
+.nyc_output
+test
+*.spec.ts
+*.e2e-spec.ts
+
+# 开发工具
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# 文档
+README.md
+*.md
+!DOCKER.md
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# Docker 相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# 其他
+.DS_Store
+Thumbs.db
+*.log
+
