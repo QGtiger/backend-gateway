@@ -46,7 +46,7 @@ RUN chown -R nestjs:nodejs /app
 USER nestjs
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 9999
 
 # 启动应用
 CMD ["node", "dist/main.js"]
