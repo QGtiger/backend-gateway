@@ -76,8 +76,10 @@ export class ProxyService {
       onError: (err, req, res) => {
         this.logger.error(`代理错误: ${err.message}`, err.stack);
         if (!res.headersSent) {
-          res.status(HttpStatus.BAD_GATEWAY).json({
-            statusCode: HttpStatus.BAD_GATEWAY,
+          // HTTP 状态码统一为 200，实际状态码通过响应体中的 code 字段表示
+          res.status(HttpStatus.OK).json({
+            success: false,
+            code: HttpStatus.BAD_GATEWAY,
             message: 'Service unavailable',
           });
         }

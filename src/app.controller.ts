@@ -44,8 +44,10 @@ export class AppController {
     proxyMiddleware(request, response, () => {
       // 如果中间件没有处理请求，返回404
       if (!response.headersSent) {
-        response.status(HttpStatus.NOT_FOUND).json({
-          statusCode: HttpStatus.NOT_FOUND,
+        // HTTP 状态码统一为 200，实际状态码通过响应体中的 code 字段表示
+        response.status(HttpStatus.OK).json({
+          success: false,
+          code: HttpStatus.NOT_FOUND,
           message: 'Route not found',
         });
       }
