@@ -46,8 +46,13 @@ export class ProxyService {
       pathRewrite: service.pathRewrite || {},
       timeout: service.timeout || 30000,
       onProxyReq: (proxyReq, req: Request) => {
+        this.logger.debug(
+          `代理请求: ${req.method} ${req.url} -> ${service.target}${req.url}`,
+        );
+        this.logger.debug(`请求头: ${JSON.stringify(proxyReq.getHeaders())}`);
+
         // 移除敏感头信息
-        proxyReq.removeHeader('host');
+        // proxyReq.removeHeader('host');
         proxyReq.removeHeader('content-length');
 
         // 添加用户信息到请求头
