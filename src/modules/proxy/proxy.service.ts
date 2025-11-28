@@ -3,38 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { Request, Response } from 'express';
 import { UserPayload } from '../auth/auth.service';
-import { ALL_SERVICES, ServiceConfig } from '@/config/services';
+import { ServiceConfig } from '@/config/services';
+import { RouteService } from '../services/route.service';
 
 @Injectable()
 export class ProxyService {
   private readonly logger = new Logger(ProxyService.name);
-  private services: ServiceConfig[] = [];
 
-  constructor(private configService: ConfigService) {
-    this.loadServicesConfig();
-  }
-
-  private loadServicesConfig(): void {
-    // 按路径长度降序排序，优先匹配更具体的路径
-    this.services = [...ALL_SERVICES].sort(
-      (a, b) => b.path.length - a.path.length,
-    );
-
-    this.logger.log(
-      `已加载 ${this.services.length} 个服务配置 ${JSON.stringify(
-        this.services,
-      )}`,
-    );
-  }
-
-  findTargetService(url: string): ServiceConfig | null {
-    for (const service of this.services) {
-      if (url.startsWith(service.path)) {
-        return service;
-      }
-    }
-    return null;
-  }
+  constructor(
+    private configService: ConfigService,
+    private routeService: RouteService,
+  ) {}
 
   createProxyMiddleware(
     service: ServiceConfig,
@@ -43,11 +22,13 @@ export class ProxyService {
     const proxyOptions: Options = {
       target: service.target,
       changeOrigin: service.changeOrigin ?? true,
-      pathRewrite: service.pathRewrite || {},
+      pathRewrite: service.pathRewrite,
       timeout: service.timeout || 30000,
       onProxyReq: (proxyReq, req: Request) => {
         this.logger.debug(
-          `代理请求: ${req.method} ${req.url} -> ${service.target}${req.url}`,
+          `代理请求: ${req.method} ${req.url} -> ${service.target}${
+            proxyReq.path || req.url
+          }`,
         );
         this.logger.debug(`请求头: ${JSON.stringify(proxyReq.getHeaders())}`);
 
@@ -108,7 +89,7 @@ export class ProxyService {
     url: string,
     user?: UserPayload,
   ): ((req: Request, res: Response, next: () => void) => void) | null {
-    const service = this.findTargetService(url);
+    const service = this.routeService.findTargetService(url);
     if (!service) {
       return null;
     }

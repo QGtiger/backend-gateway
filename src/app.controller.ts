@@ -5,8 +5,8 @@ import {
   Req,
   Res,
   UseGuards,
-  HttpException,
   HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
@@ -30,6 +30,7 @@ export class AppController {
   @All('*')
   @UseGuards(AuthGuard)
   async proxyRequest(@Req() request: Request, @Res() response: Response) {
+    // Guard 已经处理了服务匹配和认证，如果未匹配到服务会抛出 NotFoundException
     const user = (request as any).user as UserPayload | undefined;
     const proxyMiddleware = this.proxyService.getProxyMiddleware(
       request.url,

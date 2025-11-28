@@ -3,11 +3,13 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 import { IS_PUBLIC_KEY } from '../../../common/decorators/public.decorator';
+import { RouteService } from '../../services/route.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -15,6 +17,7 @@ export class AuthGuard implements CanActivate {
     private authService: AuthService,
     private reflector: Reflector,
     private configService: ConfigService,
+    private routeService: RouteService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -39,6 +42,21 @@ export class AuthGuard implements CanActivate {
       .filter((prefix) => prefix.length > 0);
 
     if (publicPrefixes.some((prefix) => requestUrl.startsWith(prefix))) {
+      return true;
+    }
+
+    // 匹配服务配置
+    const matchedService = this.routeService.findTargetService(requestUrl);
+
+    // 如果未匹配到服务，直接返回 404
+    if (!matchedService) {
+      throw new NotFoundException('Service not found');
+    }
+
+    // 如果匹配到服务，检查 requiresAuth
+    // requiresAuth === false 或未配置：跳过认证
+    // requiresAuth === true：进行认证
+    if (matchedService.requiresAuth !== true) {
       return true;
     }
 
