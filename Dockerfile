@@ -1,5 +1,5 @@
 # 第一阶段：构建阶段
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # 安装 pnpm
 RUN npm install -g pnpm
@@ -20,7 +20,7 @@ COPY . .
 RUN pnpm build
 
 # 第二阶段：生产阶段
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 
 # 安装 pnpm
 RUN npm install -g pnpm
