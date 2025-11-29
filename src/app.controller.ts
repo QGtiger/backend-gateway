@@ -32,26 +32,16 @@ export class AppController {
   async proxyRequest(@Req() request: Request, @Res() response: Response) {
     // Guard 已经处理了服务匹配和认证，如果未匹配到服务会抛出 NotFoundException
     const user = (request as any).user as UserPayload | undefined;
-    const proxyMiddleware = this.proxyService.getProxyMiddleware(
+    const proxyHandler = await this.proxyService.getProxyHandler(
       request.url,
       user,
     );
 
-    if (!proxyMiddleware) {
+    if (!proxyHandler) {
       throw new HttpException('Service not found', HttpStatus.NOT_FOUND);
     }
 
-    // 执行代理中间件
-    proxyMiddleware(request, response, () => {
-      // 如果中间件没有处理请求，返回404
-      if (!response.headersSent) {
-        // HTTP 状态码统一为 200，实际状态码通过响应体中的 code 字段表示
-        response.status(HttpStatus.OK).json({
-          success: false,
-          code: HttpStatus.NOT_FOUND,
-          message: 'Route not found',
-        });
-      }
-    });
+    // 执行代理处理
+    await proxyHandler(request, response);
   }
 }
