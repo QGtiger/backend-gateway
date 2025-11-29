@@ -1,7 +1,9 @@
 import { Injectable, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
 import { Request, Response } from 'express';
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { firstValueFrom } from 'rxjs';
+import type { AxiosRequestConfig } from 'axios';
 import { UserPayload } from '../auth/auth.service';
 import { ServiceConfig } from '@/config/services';
 import { RouteService } from '../services/route.service';
@@ -9,32 +11,12 @@ import { RouteService } from '../services/route.service';
 @Injectable()
 export class ProxyService {
   private readonly logger = new Logger(ProxyService.name);
-  private readonly axiosInstances: Map<string, AxiosInstance> = new Map();
 
   constructor(
     private readonly configService: ConfigService,
     private readonly routeService: RouteService,
+    private readonly httpService: HttpService,
   ) {}
-
-  /**
-   * 获取或创建 Axios 实例
-   */
-  private getAxiosInstance(service: ServiceConfig): AxiosInstance {
-    const key = service.target;
-    if (!this.axiosInstances.has(key)) {
-      const instance = axios.create({
-        baseURL: service.target,
-        timeout: service.timeout || 30000,
-        validateStatus: () => true, // 不抛出错误，让所有状态码都通过
-      });
-      this.axiosInstances.set(key, instance);
-    }
-    const instance = this.axiosInstances.get(key);
-    if (!instance) {
-      throw new Error(`Failed to create axios instance for ${key}`);
-    }
-    return instance;
-  }
 
   /**
    * 重写路径
@@ -158,11 +140,9 @@ export class ProxyService {
     try {
       const targetUrl = this.buildTargetUrl(req, service);
       const headers = this.buildHeaders(req, service, user);
-      const axiosInstance = this.getAxiosInstance(service);
+      const fullUrl = `${service.target}${targetUrl}`;
 
-      this.logger.debug(
-        `代理请求: ${req.method} ${req.url} -> ${service.target}${targetUrl}`,
-      );
+      this.logger.debug(`代理请求: ${req.method} ${req.url} -> ${fullUrl}`);
       this.logger.debug(`请求头: ${JSON.stringify(headers)}`);
 
       // 获取请求体
@@ -174,16 +154,20 @@ export class ProxyService {
       // 构建 axios 请求配置
       const axiosConfig: AxiosRequestConfig = {
         method: req.method as any,
-        url: targetUrl,
+        url: fullUrl,
         headers,
         params: req.query,
         data: body,
         responseType: 'arraybuffer', // 使用 arraybuffer 以支持所有类型的响应
         maxRedirects: 5,
+        timeout: service.timeout || 30000,
+        validateStatus: () => true, // 不抛出错误，让所有状态码都通过
       };
 
-      // 发送请求
-      const response = await axiosInstance.request(axiosConfig);
+      // 使用 HttpService 发送请求
+      const response = await firstValueFrom(
+        this.httpService.request(axiosConfig),
+      );
 
       this.logger.debug(`代理响应: ${response.status} ${response.statusText}`);
 
