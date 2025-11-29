@@ -23,10 +23,6 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
-    volumes:
-      # 如果需要持久化日志，可以取消注释
-      # - ./logs:/app/logs
-      - /app/node_modules
 
 networks:
   shared-network:

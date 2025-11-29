@@ -32,7 +32,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # 只安装生产依赖
-RUN pnpm config set registry https://registry.npmmirror.com && pnpm install --frozen-lockfile
+RUN pnpm config set registry https://registry.npmmirror.com && pnpm install --prod --frozen-lockfile
 
 # 从构建阶段复制构建产物
 COPY --from=builder /app/dist ./dist
