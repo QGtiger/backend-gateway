@@ -102,8 +102,8 @@ export const ALL_SERVICES: ServiceConfig[] = [
   {
     path: '/api/account',
     target: 'http://account-backend-container:3000',
-    requiresAuth: true,
-    timeout: 10000,
+    requiresAuth: false,
+    timeout: 30000,
     changeOrigin: true,
     pathRewrite: {
       '^/api/account': '',
