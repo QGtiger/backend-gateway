@@ -156,7 +156,7 @@ export class ProxyService {
         method: req.method as any,
         url: fullUrl,
         headers,
-        params: req.query,
+        // params: req.query,
         data: body,
         responseType: 'arraybuffer', // 使用 arraybuffer 以支持所有类型的响应
         maxRedirects: 5,
