@@ -34,7 +34,7 @@ export class ProxyService {
 
         // 移除敏感头信息
         // proxyReq.removeHeader('host');
-        proxyReq.removeHeader('content-length');
+        // proxyReq.removeHeader('content-length');
 
         // 添加用户信息到请求头
         if (user) {
